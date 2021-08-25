@@ -59,6 +59,7 @@ pub mod web;
 pub use http;
 
 mod body;
+mod config;
 mod request;
 mod response;
 mod route_recognizer;
