@@ -5,6 +5,43 @@ use quote::quote;
 use syn::{Meta, NestedMeta, Path};
 
 #[derive(Debug, Copy, Clone, FromMeta)]
+pub(crate) enum RenameAllRule {
+    RenameRule(RenameRule),
+    Serde {
+        serialize: Option<RenameRule>,
+        deserialize: Option<RenameRule>
+    }
+}
+
+impl RenameAllRule {
+    pub(crate) fn ser_rename_rule(self) -> RenameRule {
+        match self {
+            RenameAllRule::RenameRule(rule) => rule,
+            RenameAllRule::Serde { serialize, .. } => {
+                if let Some(serialize_rule) = serialize {
+                    serialize_rule
+                } else {
+                    RenameTarget::Field.rule()
+                }
+            },
+        }
+    }
+
+    pub(crate) fn de_rename_rule(self) -> RenameRule {
+        match self {
+            RenameAllRule::RenameRule(rule) => rule,
+            RenameAllRule::Serde { deserialize, .. } => {
+                if let Some(deserialize_rule) = deserialize {
+                    deserialize_rule
+                } else {
+                    RenameTarget::Field.rule()
+                }
+            },
+        }
+    }
+}
+
+#[derive(Debug, Copy, Clone, FromMeta)]
 pub(crate) enum RenameRule {
     #[darling(rename = "lowercase")]
     Lower,

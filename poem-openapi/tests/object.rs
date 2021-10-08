@@ -30,6 +30,13 @@ fn rename_all() {
         delete_user: i32,
     }
 
+    #[derive(Object)]
+    #[oai(rename_all(serialize="s"))]
+    struct A {
+        create_user: i32,
+        delete_user: i32,
+    }
+
     let meta = get_meta::<Obj>();
     assert_eq!(meta.properties[0].0, "createUser");
     assert_eq!(meta.properties[1].0, "deleteUser");

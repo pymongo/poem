@@ -9,7 +9,7 @@ use syn::{ext::IdentExt, Attribute, DeriveInput, Error, Generics, Type};
 
 use crate::{
     common_args::{
-        ConcreteType, DefaultValue, MaximumValidator, MinimumValidator, RenameRule, RenameRuleExt,
+        ConcreteType, DefaultValue, MaximumValidator, MinimumValidator, RenameAllRule, RenameRule, RenameRuleExt,
         RenameTarget,
     },
     error::GeneratorResult,
@@ -67,7 +67,7 @@ struct ObjectArgs {
     #[darling(default)]
     rename: Option<String>,
     #[darling(default)]
-    rename_all: Option<RenameRule>,
+    rename_all: Option<RenameAllRule>,
     #[darling(default, multiple, rename = "concrete")]
     concretes: Vec<ConcreteType>,
     #[darling(default)]
@@ -110,9 +110,23 @@ pub(crate) fn generate(args: DeriveInput) -> GeneratorResult<TokenStream> {
             continue;
         }
 
+        let ser_field_name = field.rename.clone().unwrap_or_else(|| {
+            let rule = match args.rename_all {
+                Some(rename_all) => {
+                    rename_all.ser_rename_rule()
+                },
+                None => RenameTarget::Field.rule()
+            };
+            rule.rename(field_ident.unraw().to_string())
+        });
         let field_name = field.rename.clone().unwrap_or_else(|| {
-            args.rename_all
-                .rename(field_ident.unraw().to_string(), RenameTarget::Field)
+            let rule = match args.rename_all {
+                Some(rename_all) => {
+                    rename_all.de_rename_rule()
+                },
+                None => RenameTarget::Field.rule()
+            };
+            rule.rename(field_ident.unraw().to_string())
         });
         let (field_title, field_description) = get_summary_and_description(&field.attrs)?;
         let field_title = optional_literal(&field_title);
