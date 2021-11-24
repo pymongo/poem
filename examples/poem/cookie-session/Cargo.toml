@@ -6,5 +6,6 @@ publish = false
 
 [dependencies]
 poem = { path = "../../../poem", features = ["session"] }
+reqwest = { version = "0.11", features = ["blocking"] }
 tokio = { version = "1.12.0", features = ["rt-multi-thread", "macros"] }
 tracing-subscriber = "0.2.24"
